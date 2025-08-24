@@ -1,6 +1,5 @@
 import Fastify from 'fastify'
 import dotenv from 'dotenv'
-
 dotenv.config()
 import pkg from 'pg'
 const { Pool } = pkg
@@ -9,8 +8,6 @@ const api = Fastify({ logger: true })
 
 import cors from '@fastify/cors'
 await api.register(cors, { origin: true })
-
-// import 'dotenv/config'
 
 // Variáveis esperadas
 const DATABASE_URL = process.env.DATABASE_URL
@@ -175,5 +172,3 @@ const start = async () => {
 }
 
 start()
-
-
