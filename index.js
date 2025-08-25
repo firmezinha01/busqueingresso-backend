@@ -136,8 +136,12 @@ api.put('/users/:id', async (request, reply) => {
   }
 })
 
-// Exporta como função para Vercel
-export default async function handler(req, res) {
-  await api.ready()
-  api.server.emit('request', req, res)
-}
+const PORT = process.env.PORT || 3000
+
+api.listen({ port: PORT, host: '0.0.0.0' }, (err, address) => {
+  if (err) {
+    console.error(err)
+    process.exit(1)
+  }
+  console.log(`Servidor rodando em ${address}`)
+})
