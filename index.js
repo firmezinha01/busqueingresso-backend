@@ -142,7 +142,18 @@ api.put('/users/:id', async (request, reply) => {
   }
 })
 
-api.listen({ port: 3000 }, (err, address) => {
+// api.listen({ port: 3000 }, (err, address) => {
+//   if (err) {
+//     api.log.error(err);
+//     process.exit(1);
+//   }
+//   api.log.info(`Servidor rodando em ${address}`);
+// });
+
+
+const port = process.env.PORT || 3000;
+
+api.listen({ port }, (err, address) => {
   if (err) {
     api.log.error(err);
     process.exit(1);
