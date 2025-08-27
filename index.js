@@ -5,19 +5,22 @@ dotenv.config()
 import pkg from 'pg'
 const { Pool } = pkg
 
-import cors from '@fastify/cors'
 import bcrypt from 'bcrypt'
 
-const api = Fastify({ logger: false }) 
+const api = Fastify({ logger: true })
 
-await api.register(cors, { origin: true })
+import fastifyCors from '@fastify/cors';
+
+await api.register(fastifyCors, {
+  origin: true, // ou defina um domínio específico
+  methods: ['POST', 'GET', 'OPTIONS']
+});
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: true }
 })
 
-// Rotas
 api.get('/', async (request, reply) => {
   reply.send({ message: 'Servidor funcionando!' })
 })
@@ -57,15 +60,13 @@ api.post('/users', async (request, reply) => {
       return reply.code(409).send({ error: 'Usuário já cadastrado' })
     }
 
+    const senhaCriptografada = await bcrypt.hash(senha, 10)
 
-
-const senhaCriptografada = await bcrypt.hash(senha, 10)
-
-const result = await pool.query(
-  `INSERT INTO usuarios (nome, data_nascimento, cpf, email, telefone, endereco, username, senha_hash)
+    const result = await pool.query(
+      `INSERT INTO usuarios (nome, data_nascimento, cpf, email, telefone, endereco, username, senha_hash)
    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-  [nome, data_nascimento, cpf, email, telefone, endereco, username, senhaCriptografada]
-)
+      [nome, data_nascimento, cpf, email, telefone, endereco, username, senhaCriptografada]
+    )
 
     reply.code(201).send(result.rows[0])
   } catch (err) {
@@ -73,39 +74,38 @@ const result = await pool.query(
   }
 })
 
-
 api.post('/login', async (request, reply) => {
-  const { email, senha } = request.body
+  const { email, senha } = request.body;
 
   if (!email || !senha) {
-    return reply.code(400).send({ error: 'Email e senha são obrigatórios' })
+    return reply.code(400).send({ error: 'Email e senha são obrigatórios' });
   }
 
   try {
-    const result = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email])
+    const result = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
 
     if (result.rows.length === 0) {
-      return reply.code(404).send({ error: 'Usuário não encontrado' })
+      return reply.code(404).send({ error: 'Usuário não encontrado' });
     }
-    
 
-    const usuario = result.rows[0]
-    const senhaValida = await bcrypt.compare(senha, usuario.senha_hash)
+    const usuario = result.rows[0];
+    const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);
 
     if (!senhaValida) {
-      return reply.code(401).send({ error: 'Senha incorreta' })
+      return reply.code(401).send({ error: 'Senha incorreta' });
     }
 
-    const { senha_hash, ...usuarioSemSenha } = usuario
+    const { senha_hash, ...usuarioSemSenha } = usuario;
 
     reply.send({
       mensagem: 'Login realizado com sucesso',
       usuario: usuarioSemSenha
-    })
+    });
   } catch (err) {
-    reply.code(500).send({ error: 'Erro ao realizar login' })
+    request.log.error(err);
+    reply.code(500).send({ error: 'Erro ao realizar login' });
   }
-})
+});
 
 api.put('/users/:id', async (request, reply) => {
   const { id } = request.params
@@ -142,12 +142,10 @@ api.put('/users/:id', async (request, reply) => {
   }
 })
 
-const PORT = process.env.PORT || 3000
-
-api.listen({ port: PORT, host: '0.0.0.0' }, (err, address) => {
+api.listen({ port: 3000 }, (err, address) => {
   if (err) {
-    console.error(err)
-    process.exit(1)
+    api.log.error(err);
+    process.exit(1);
   }
-  console.log(`Servidor rodando em ${address}`)
-})
+  api.log.info(`Servidor rodando em ${address}`);
+});
