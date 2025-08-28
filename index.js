@@ -6,24 +6,23 @@ import pkg from 'pg'
 const { Pool } = pkg
 
 import bcrypt from 'bcrypt'
+import fastifyCors from '@fastify/cors'
 
 const api = Fastify({ logger: true })
-
-import fastifyCors from '@fastify/cors';
-
-await api.register(fastifyCors, {
-  origin: true, // ou defina um domínio específico
-  methods: ['POST', 'GET', 'OPTIONS']
-});
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: true }
 })
 
+await api.register(fastifyCors, {
+  origin: true, // ou defina um domínio específico
+  methods: ['POST', 'GET', 'OPTIONS']
+});
+
 api.get('/', async (request, reply) => {
   reply.send({ message: 'Servidor funcionando!' })
-})
+});
 
 api.get('/status', async (request, reply) => {
   try {
@@ -142,7 +141,9 @@ api.put('/users/:id', async (request, reply) => {
   }
 })
 
-// api.listen({ port: 3000 }, (err, address) => {
+// const port = process.env.PORT || 3000;
+
+// api.listen({ port }, (err, address) => {
 //   if (err) {
 //     api.log.error(err);
 //     process.exit(1);
@@ -150,13 +151,15 @@ api.put('/users/:id', async (request, reply) => {
 //   api.log.info(`Servidor rodando em ${address}`);
 // });
 
-
 const port = process.env.PORT || 3000;
 
-api.listen({ port }, (err, address) => {
+api.listen({ port, host: '0.0.0.0' }, (err, address) => {
   if (err) {
     api.log.error(err);
     process.exit(1);
   }
   api.log.info(`Servidor rodando em ${address}`);
 });
+
+
+
