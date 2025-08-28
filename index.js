@@ -16,7 +16,7 @@ const pool = new Pool({
 })
 
 await api.register(fastifyCors, {
-  origin: true, // ou defina um domínio específico
+  origin: true,
   methods: ['POST', 'GET', 'OPTIONS']
 });
 
