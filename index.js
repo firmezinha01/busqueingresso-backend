@@ -11,8 +11,10 @@ import fastifyCors from '@fastify/cors'
 const api = Fastify({ logger: true })
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: true }
+  connectionString: 'postgresql://neondb_owner:npg_zrG3l5psMwTB@ep-winter-bonus-acf53ouy-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
+  ssl: {
+    rejectUnauthorized:  false
+  }
 })
 
 await api.register(fastifyCors, {
@@ -151,9 +153,9 @@ api.put('/users/:id', async (request, reply) => {
 //   api.log.info(`Servidor rodando em ${address}`);
 // });
 
-const port = process.env.PORT || 3000;
+//const port = process.env.PORT || 3000;
 
-api.listen({ port, host: '0.0.0.0' }, (err, address) => {
+api.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
   if (err) {
     api.log.error(err);
     process.exit(1);
