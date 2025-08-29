@@ -16,8 +16,8 @@ const pool = new Pool({
 })
 
 await api.register(fastifyCors, {
-  origin: true,
-  methods: ['POST', 'GET', 'OPTIONS']
+  origin: '*',
+  methods: ['POST', 'GET']
 });
 
 api.get('/', async (request, reply) => {
@@ -160,6 +160,7 @@ api.listen({ port, host: '0.0.0.0' }, (err, address) => {
   }
   api.log.info(`Servidor rodando em ${address}`);
 });
+
 
 
 
